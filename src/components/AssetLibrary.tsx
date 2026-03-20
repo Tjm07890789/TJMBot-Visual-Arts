@@ -8,6 +8,8 @@ interface AssetLibraryProps {
 
 export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
   const [filter, setFilter] = useState<Asset['type'] | 'all'>('all')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const filteredAssets = filter === 'all' 
     ? assets 
@@ -24,6 +26,76 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
     }
   }
 
+  const handleSelect = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredAssets.map(a => a.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    
+    setIsDeleting(true)
+    try {
+      const response = await fetch('/api/assets/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      })
+      
+      if (response.ok) {
+        onAssetsChange(assets.filter(a => !selectedIds.has(a.id)))
+        setSelectedIds(new Set())
+      }
+    } catch (error) {
+      console.error('Failed to bulk delete:', error)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleRefresh = async (assetId: string) => {
+    try {
+      const response = await fetch('/api/assets/check-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetId })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        if (result.status === 'complete') {
+          // Update the asset in the list
+          onAssetsChange(assets.map(a => 
+            a.id === assetId 
+              ? { ...a, status: 'complete', url: result.url }
+              : a
+          ))
+        } else if (result.status === 'failed') {
+          onAssetsChange(assets.map(a => 
+            a.id === assetId 
+              ? { ...a, status: 'failed' }
+              : a
+          ))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to refresh:', error)
+    }
+  }
+
   const getStatusColor = (status: Asset['status']) => {
     switch (status) {
       case 'complete': return 'text-green-400'
@@ -32,10 +104,13 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
     }
   }
 
+  const allSelected = filteredAssets.length > 0 && filteredAssets.every(a => selectedIds.has(a.id))
+  const someSelected = selectedIds.size > 0
+
   return (
     <div>
       {/* Filters */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-4">
         {(['all', 'image', 'meme', 'video'] as const).map((f) => (
           <button
             key={f}
@@ -51,6 +126,33 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
         ))}
       </div>
 
+      {/* Bulk Actions */}
+      {filteredAssets.length > 0 && (
+        <div className="flex items-center gap-4 mb-4 p-3 bg-gray-800 rounded-lg">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-300">
+              {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
+            </span>
+          </label>
+          
+          {someSelected && (
+            <button
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="px-4 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white rounded text-sm font-medium transition-colors"
+            >
+              {isDeleting ? 'Deleting...' : `Delete ${selectedIds.size}`}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Assets Grid */}
       {filteredAssets.length === 0 ? (
         <div className="text-center py-16">
@@ -62,10 +164,24 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
           {filteredAssets.map((asset) => (
             <div
               key={asset.id}
-              className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors"
+              className={`bg-gray-800 rounded-lg overflow-hidden border transition-colors ${
+                selectedIds.has(asset.id) 
+                  ? 'border-blue-500 ring-2 ring-blue-500/20' 
+                  : 'border-gray-700 hover:border-gray-600'
+              }`}
             >
+              {/* Selection Checkbox */}
+              <div className="absolute top-2 left-2 z-10">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(asset.id)}
+                  onChange={(e) => handleSelect(asset.id, e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-600 bg-gray-700/80 text-blue-600 focus:ring-blue-500"
+                />
+              </div>
+
               {/* Preview */}
-              <div className="aspect-square bg-gray-900 flex items-center justify-center">
+              <div className="aspect-square bg-gray-900 flex items-center justify-center relative">
                 {asset.status === 'complete' && asset.url ? (
                   asset.type === 'image' ? (
                     <img
@@ -88,6 +204,12 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     <p className="text-sm text-gray-400 mt-2">Generating...</p>
+                    <button
+                      onClick={() => handleRefresh(asset.id)}
+                      className="mt-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs text-gray-300"
+                    >
+                      Check Status
+                    </button>
                   </div>
                 ) : (
                   <div className="text-center text-red-400">
