@@ -261,26 +261,30 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
                 </div>
                 
                 {/* Actions */}
-                {asset.status === 'complete' && asset.url && (
+                {asset.status === 'complete' && (
                   <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => handleCopy(asset.url, asset.id)}
-                      className={`flex-1 px-3 py-1.5 rounded text-sm font-medium text-center transition-colors ${
-                        copiedId === asset.id
-                          ? 'bg-green-600 text-white'
-                          : 'bg-purple-600 hover:bg-purple-700 text-white'
-                      }`}
-                    >
-                      {copiedId === asset.id ? 'Copied!' : 'Copy'}
-                    </button>
-                    <a
-                      href={asset.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium text-center transition-colors"
-                    >
-                      Open
-                    </a>
+                    {asset.url && (
+                      <>
+                        <button
+                          onClick={() => handleCopy(asset.url!, asset.id)}
+                          className={`flex-1 px-3 py-1.5 rounded text-sm font-medium text-center transition-colors ${
+                            copiedId === asset.id
+                              ? 'bg-green-600 text-white'
+                              : 'bg-purple-600 hover:bg-purple-700 text-white'
+                          }`}
+                        >
+                          {copiedId === asset.id ? 'Copied!' : 'Copy'}
+                        </button>
+                        <a
+                          href={asset.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium text-center transition-colors"
+                        >
+                          Open
+                        </a>
+                      </>
+                    )}
                     <button
                       onClick={() => handleDelete(asset.id)}
                       className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded text-sm font-medium transition-colors"
