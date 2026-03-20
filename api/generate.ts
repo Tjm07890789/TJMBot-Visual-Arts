@@ -100,6 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const prediction = await replicateResponse.json();
+    console.log('Replicate prediction created:', prediction);
 
     // Store prediction ID
     await client.query(

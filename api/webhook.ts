@@ -9,6 +9,8 @@ const pool = new Pool({
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Replicate sends POST webhook when prediction completes
+  console.log('Webhook received:', req.method, req.body);
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -17,6 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const { id: predictionId, status, output } = req.body;
+    console.log('Webhook data:', { predictionId, status, output });
 
     if (!predictionId) {
       return res.status(400).json({ error: 'Missing prediction id' });
@@ -30,6 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (rows.length === 0) {
       console.warn('Webhook received for unknown prediction:', predictionId);
+      console.warn('Available predictions in DB:', await client.query('SELECT id, replicate_prediction_id FROM assets WHERE replicate_prediction_id IS NOT NULL'));
       return res.status(404).json({ error: 'Asset not found' });
     }
 
