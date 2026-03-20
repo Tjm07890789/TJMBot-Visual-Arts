@@ -46,20 +46,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const assetId = assetRows[0].id;
 
     // Map type to Replicate model
-    let version: string;
+    let model: string;
     let input: Record<string, unknown>;
 
     switch (type) {
       case 'image':
-        version = 'ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4'; // SDXL
-        input = { prompt, width, height, num_outputs: 1 };
+        model = 'black-forest-labs/flux-schnell';
+        input = { 
+          prompt, 
+          aspect_ratio: width > height ? '16:9' : width < height ? '9:16' : '1:1',
+          num_outputs: 1,
+          output_format: 'png'
+        };
         break;
       case 'meme':
-        version = 'ca1f5e5e0c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5'; // AnimateDiff
-        input = { prompt, num_frames: 16, fps: 8 };
+        model = 'black-forest-labs/flux-schnell';
+        input = { prompt, num_outputs: 1, output_format: 'png' };
         break;
       case 'video':
-        version = '3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438'; // SVD
+        // For video, we'll use the image as the first frame with a video model
+        model = 'stability-ai/stable-video-diffusion';
         input = { image: prompt, frames: 14, fps: 6 };
         break;
       default:
@@ -74,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version,
+        model,
         input,
         webhook: 'https://tjmbot-visual-arts.vercel.app/api/webhook',
         webhook_events_filter: ['completed'],
