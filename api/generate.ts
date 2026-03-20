@@ -45,13 +45,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const assetId = assetRows[0].id;
 
-    // Map type to Replicate model
-    let model: string;
+    // Map type to Replicate model version
+    // For official models, we can use the model name as the version
+    let version: string;
     let input: Record<string, unknown>;
 
     switch (type) {
       case 'image':
-        model = 'black-forest-labs/flux-schnell';
+        // FLUX.1 schnell - fast, cheap, good quality
+        version = 'black-forest-labs/flux-schnell';
         input = { 
           prompt, 
           aspect_ratio: width > height ? '16:9' : width < height ? '9:16' : '1:1',
@@ -60,12 +62,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
         break;
       case 'meme':
-        model = 'black-forest-labs/flux-schnell';
+        version = 'black-forest-labs/flux-schnell';
         input = { prompt, num_outputs: 1, output_format: 'png' };
         break;
       case 'video':
         // For video, we'll use the image as the first frame with a video model
-        model = 'stability-ai/stable-video-diffusion';
+        version = 'stability-ai/stable-video-diffusion';
         input = { image: prompt, frames: 14, fps: 6 };
         break;
       default:
@@ -80,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model,
+        version,
         input,
         webhook: 'https://tjmbot-visual-arts.vercel.app/api/webhook',
         webhook_events_filter: ['completed'],
