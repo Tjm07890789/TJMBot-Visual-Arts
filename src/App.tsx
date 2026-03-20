@@ -8,9 +8,19 @@ function App() {
   const [activeTab, setActiveTab] = useState<'create' | 'library'>('create')
 
   useEffect(() => {
-    // Load assets from local storage on mount
+    // Load assets on mount
     loadAssets()
-  }, [])
+
+    // Poll for updates every 3 seconds when there are generating assets
+    const interval = setInterval(() => {
+      const hasGenerating = assets.some(a => a.status === 'generating')
+      if (hasGenerating || activeTab === 'library') {
+        loadAssets()
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [assets, activeTab])
 
   const loadAssets = async () => {
     try {
