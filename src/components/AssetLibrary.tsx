@@ -10,6 +10,7 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
   const [filter, setFilter] = useState<Asset['type'] | 'all'>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeleting, setIsDeleting] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const filteredAssets = filter === 'all' 
     ? assets 
@@ -63,6 +64,32 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
       console.error('Failed to bulk delete:', error)
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleCopy = async (url: string, id: string) => {
+    try {
+      // Fetch the image as blob
+      const response = await fetch(url)
+      const blob = await response.blob()
+      
+      // Copy to clipboard
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type]: blob })
+      ])
+      
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+      // Fallback: copy the URL
+      try {
+        await navigator.clipboard.writeText(url)
+        setCopiedId(id)
+        setTimeout(() => setCopiedId(null), 2000)
+      } catch (e) {
+        console.error('Fallback copy failed:', e)
+      }
     }
   }
 
@@ -164,7 +191,7 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
           {filteredAssets.map((asset) => (
             <div
               key={asset.id}
-              className={`bg-gray-800 rounded-lg overflow-hidden border transition-colors ${
+              className={`bg-gray-800 rounded-lg overflow-hidden border transition-colors relative ${
                 selectedIds.has(asset.id) 
                   ? 'border-blue-500 ring-2 ring-blue-500/20' 
                   : 'border-gray-700 hover:border-gray-600'
@@ -181,7 +208,7 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
               </div>
 
               {/* Preview */}
-              <div className="aspect-square bg-gray-900 flex items-center justify-center relative">
+              <div className="aspect-square bg-gray-900 flex items-center justify-center">
                 {asset.status === 'complete' && asset.url ? (
                   asset.type === 'image' ? (
                     <img
@@ -234,17 +261,26 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
                 </div>
                 
                 {/* Actions */}
-                {asset.status === 'complete' && (
+                {asset.status === 'complete' && asset.url && (
                   <div className="flex gap-2 mt-3">
-                    {asset.url && (
-                      <a
-                        href={asset.url}
-                        download
-                        className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium text-center transition-colors"
-                      >
-                        Download
-                      </a>
-                    )}
+                    <button
+                      onClick={() => handleCopy(asset.url, asset.id)}
+                      className={`flex-1 px-3 py-1.5 rounded text-sm font-medium text-center transition-colors ${
+                        copiedId === asset.id
+                          ? 'bg-green-600 text-white'
+                          : 'bg-purple-600 hover:bg-purple-700 text-white'
+                      }`}
+                    >
+                      {copiedId === asset.id ? 'Copied!' : 'Copy'}
+                    </button>
+                    <a
+                      href={asset.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium text-center transition-colors"
+                    >
+                      Open
+                    </a>
                     <button
                       onClick={() => handleDelete(asset.id)}
                       className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded text-sm font-medium transition-colors"
