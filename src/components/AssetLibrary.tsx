@@ -138,7 +138,7 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
     <div>
       {/* Filters */}
       <div className="flex gap-2 mb-4">
-        {(['all', 'image', 'meme', 'video'] as const).map((f) => (
+        {(['all', 'image', 'video'] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -210,7 +210,7 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
               {/* Preview */}
               <div className="aspect-square bg-gray-900 flex items-center justify-center">
                 {asset.status === 'complete' && asset.url ? (
-                  asset.type === 'image' || asset.type === 'meme' ? (
+                  asset.type === 'image' ? (
                     <img
                       src={asset.url}
                       alt={asset.prompt}

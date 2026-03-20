@@ -54,22 +54,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'image':
         // FLUX.1 schnell - fast, cheap, good quality
         version = 'black-forest-labs/flux-schnell';
-        input = { 
-          prompt, 
+        input = {
+          prompt,
           aspect_ratio: width > height ? '16:9' : width < height ? '9:16' : '1:1',
           num_outputs: 1,
           output_format: 'png'
         };
         break;
-      case 'meme':
-        version = 'black-forest-labs/flux-schnell';
-        input = { prompt, num_outputs: 1, output_format: 'png' };
-        break;
       case 'video':
-        // For video, we'll use the image as the first frame with a video model
-        version = 'stability-ai/stable-video-diffusion';
-        input = { image: prompt, frames: 14, fps: 6 };
-        break;
+        // Video generation not yet implemented
+        return res.status(400).json({ error: 'Video generation coming soon' });
       default:
         return res.status(400).json({ error: 'Invalid type' });
     }

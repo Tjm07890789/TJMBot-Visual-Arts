@@ -55,8 +55,8 @@ export function GenerationForm({ onAssetCreated }: GenerationFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-3">
               Content Type
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {(['image', 'meme', 'video'] as const).map((t) => (
+            <div className="grid grid-cols-2 gap-3">
+              {(['image', 'video'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
@@ -82,10 +82,8 @@ export function GenerationForm({ onAssetCreated }: GenerationFormProps) {
               id="prompt"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={type === 'image' 
+              placeholder={type === 'image'
                 ? "A futuristic cityscape at sunset, cyberpunk style..."
-                : type === 'meme'
-                ? "A cat wearing sunglasses with dramatic lighting..."
                 : "A serene forest with flowing water, cinematic..."
               }
               rows={4}
@@ -129,23 +127,15 @@ export function GenerationForm({ onAssetCreated }: GenerationFormProps) {
           <ul className="text-sm text-gray-400 space-y-1">
             {type === 'image' && (
               <>
-                <li>• Uses Stable Diffusion XL via Replicate</li>
+                <li>• Uses FLUX.1 schnell via Replicate</li>
                 <li>• Generates 1024x1024 images</li>
-                <li>• Cost: ~$0.02 per image</li>
-              </>
-            )}
-            {type === 'meme' && (
-              <>
-                <li>• Uses FLUX for meme images</li>
-                <li>• Generates 1024x1024 meme images</li>
-                <li>• Cost: ~$0.003 per meme</li>
+                <li>• Cost: ~$0.003 per image</li>
               </>
             )}
             {type === 'video' && (
               <>
-                <li>• Uses Stable Video Diffusion</li>
-                <li>• Generates up to 10 second videos</li>
-                <li>• Cost: ~$0.20-0.50 per video</li>
+                <li>• Video generation coming soon</li>
+                <li>• Currently disabled</li>
               </>
             )}
           </ul>
