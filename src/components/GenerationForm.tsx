@@ -134,8 +134,9 @@ export function GenerationForm({ onAssetCreated }: GenerationFormProps) {
             )}
             {type === 'video' && (
               <>
-                <li>• Video generation coming soon</li>
-                <li>• Currently disabled</li>
+                <li>• Uses Wan 2.1 1.3B via Replicate</li>
+                <li>• Generates 5s 480p videos</li>
+                <li>• Cost: ~$0.20 per video</li>
               </>
             )}
           </ul>

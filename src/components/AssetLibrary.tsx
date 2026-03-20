@@ -216,6 +216,12 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
                       alt={asset.prompt}
                       className="w-full h-full object-cover"
                     />
+                  ) : asset.type === 'video' ? (
+                    <video
+                      src={asset.url}
+                      controls
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="text-center p-4">
                       <span className="text-4xl">🎥</span>

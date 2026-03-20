@@ -62,8 +62,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
         break;
       case 'video':
-        // Video generation not yet implemented
-        return res.status(400).json({ error: 'Video generation coming soon' });
+        // Wan 2.1 1.3B - cheapest video model at $0.20/video
+        version = 'wan-video/wan-2.1-1.3b';
+        input = {
+          prompt,
+          aspect_ratio: '16:9',
+          frame_num: 81, // 5 seconds at 16fps
+          resolution: '480p',
+          sample_steps: 30,
+          sample_guide_scale: 6,
+          sample_shift: 8
+        };
+        break;
       default:
         return res.status(400).json({ error: 'Invalid type' });
     }
