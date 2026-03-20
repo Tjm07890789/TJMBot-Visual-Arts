@@ -1,0 +1,141 @@
+import { useState } from 'react'
+import type { Asset } from '../types'
+
+interface AssetLibraryProps {
+  assets: Asset[]
+  onAssetsChange: (assets: Asset[]) => void
+}
+
+export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
+  const [filter, setFilter] = useState<Asset['type'] | 'all'>('all')
+
+  const filteredAssets = filter === 'all' 
+    ? assets 
+    : assets.filter(a => a.type === filter)
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/assets/${id}`, { method: 'DELETE' })
+      if (response.ok) {
+        onAssetsChange(assets.filter(a => a.id !== id))
+      }
+    } catch (error) {
+      console.error('Failed to delete:', error)
+    }
+  }
+
+  const getStatusColor = (status: Asset['status']) => {
+    switch (status) {
+      case 'complete': return 'text-green-400'
+      case 'generating': return 'text-yellow-400'
+      case 'failed': return 'text-red-400'
+    }
+  }
+
+  return (
+    <div>
+      {/* Filters */}
+      <div className="flex gap-2 mb-6">
+        {(['all', 'image', 'meme', 'video'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-2 rounded-lg font-medium capitalize transition-colors ${
+              filter === f
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            {f} {f !== 'all' && `(${assets.filter(a => a.type === f).length})`}
+          </button>
+        ))}
+      </div>
+
+      {/* Assets Grid */}
+      {filteredAssets.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-gray-400 text-lg">No assets yet</p>
+          <p className="text-gray-500 mt-2">Create your first image, meme, or video</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filteredAssets.map((asset) => (
+            <div
+              key={asset.id}
+              className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors"
+            >
+              {/* Preview */}
+              <div className="aspect-square bg-gray-900 flex items-center justify-center">
+                {asset.status === 'complete' && asset.url ? (
+                  asset.type === 'image' ? (
+                    <img
+                      src={asset.url}
+                      alt={asset.prompt}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-center p-4">
+                      <span className="text-4xl">
+                        {asset.type === 'meme' ? '🎬' : '🎥'}
+                      </span>
+                      <p className="text-sm text-gray-400 mt-2">{asset.type}</p>
+                    </div>
+                  )
+                ) : asset.status === 'generating' ? (
+                  <div className="text-center">
+                    <svg className="animate-spin h-8 w-8 mx-auto text-blue-500" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <p className="text-sm text-gray-400 mt-2">Generating...</p>
+                  </div>
+                ) : (
+                  <div className="text-center text-red-400">
+                    <span className="text-2xl">❌</span>
+                    <p className="text-sm mt-1">Failed</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="p-3">
+                <p className="text-sm text-gray-300 line-clamp-2" title={asset.prompt}>
+                  {asset.prompt}
+                </p>
+                <div className="flex items-center justify-between mt-2">
+                  <span className={`text-xs capitalize ${getStatusColor(asset.status)}`}>
+                    {asset.status}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(asset.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                
+                {/* Actions */}
+                {asset.status === 'complete' && (
+                  <div className="flex gap-2 mt-3">
+                    {asset.url && (
+                      <a
+                        href={asset.url}
+                        download
+                        className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium text-center transition-colors"
+                      >
+                        Download
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleDelete(asset.id)}
+                      className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded text-sm font-medium transition-colors"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
