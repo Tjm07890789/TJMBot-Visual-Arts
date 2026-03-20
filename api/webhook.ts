@@ -44,35 +44,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Download the generated file from Replicate
       const imageUrl = Array.isArray(output) ? output[0] : output;
       
-      // Fetch the file
-      const imageResponse = await fetch(imageUrl);
-      if (!imageResponse.ok) {
-        throw new Error('Failed to fetch generated image');
-      }
-      
-      const imageBuffer = await imageResponse.arrayBuffer();
-      const pathname = `assets/${assetType}/${assetId}.png`;
-      
-      // Store in Vercel Blob
-      const blob = await put(pathname, Buffer.from(imageBuffer), {
-        access: 'public',
-        contentType: 'image/png',
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
-
-      // Update database with blob URL
+      // For now, store the Replicate URL directly (blob upload has token issues)
+      // Update database with Replicate URL
       await client.query(
         `UPDATE assets 
          SET status = 'complete', 
              blob_url = $1, 
-             blob_pathname = $2,
              completed_at = NOW()
-         WHERE id = $3`,
-        [blob.url, pathname, assetId]
+         WHERE id = $2`,
+        [imageUrl, assetId]
       );
 
-      console.log('Asset completed:', assetId, 'Blob URL:', blob.url);
-      return res.status(200).json({ success: true, assetId, url: blob.url });
+      console.log('Asset completed:', assetId, 'URL:', imageUrl);
+      return res.status(200).json({ success: true, assetId, url: imageUrl });
     } else if (status === 'failed') {
       await client.query(
         "UPDATE assets SET status = 'failed', updated_at = NOW() WHERE id = $1",
