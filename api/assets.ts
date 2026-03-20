@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { v4 as uuidv4 } from 'uuid';
-import type { Asset, GenerationRequest } from '../src/types';
+import type { Asset, GenerationRequest } from '../src/types/index.js';
 import fs from 'fs';
 import path from 'path';
 

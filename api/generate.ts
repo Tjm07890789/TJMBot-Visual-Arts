@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { GenerationRequest } from '../src/types';
+import type { GenerationRequest } from '../src/types/index.js';
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 
