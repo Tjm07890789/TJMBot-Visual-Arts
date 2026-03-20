@@ -5,8 +5,5 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1.ts" }
-  ],
-  "env": {
-    "REPLICATE_API_TOKEN": "@replicate-api-token"
-  }
+  ]
 }
