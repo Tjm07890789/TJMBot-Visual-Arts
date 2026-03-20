@@ -210,7 +210,7 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
               {/* Preview */}
               <div className="aspect-square bg-gray-900 flex items-center justify-center">
                 {asset.status === 'complete' && asset.url ? (
-                  asset.type === 'image' ? (
+                  asset.type === 'image' || asset.type === 'meme' ? (
                     <img
                       src={asset.url}
                       alt={asset.prompt}
@@ -218,9 +218,7 @@ export function AssetLibrary({ assets, onAssetsChange }: AssetLibraryProps) {
                     />
                   ) : (
                     <div className="text-center p-4">
-                      <span className="text-4xl">
-                        {asset.type === 'meme' ? '🎬' : '🎥'}
-                      </span>
+                      <span className="text-4xl">🎥</span>
                       <p className="text-sm text-gray-400 mt-2">{asset.type}</p>
                     </div>
                   )

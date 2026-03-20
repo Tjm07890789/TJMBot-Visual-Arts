@@ -136,9 +136,9 @@ export function GenerationForm({ onAssetCreated }: GenerationFormProps) {
             )}
             {type === 'meme' && (
               <>
-                <li>• Uses AnimateDiff for short animations</li>
-                <li>• Generates 2-3 second GIFs</li>
-                <li>• Cost: ~$0.02-0.05 per meme</li>
+                <li>• Uses FLUX for meme images</li>
+                <li>• Generates 1024x1024 meme images</li>
+                <li>• Cost: ~$0.003 per meme</li>
               </>
             )}
             {type === 'video' && (
