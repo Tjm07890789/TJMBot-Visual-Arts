@@ -1,4 +1,5 @@
 {
+  "name": "tjmbot-visual-arts",
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
