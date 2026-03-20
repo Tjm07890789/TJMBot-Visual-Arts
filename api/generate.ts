@@ -76,7 +76,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         version,
         input,
-        webhook: `${process.env.VERCEL_URL || 'https://tjmbot-visual-arts.vercel.app'}/api/webhook`,
+        webhook: 'https://tjmbot-visual-arts.vercel.app/api/webhook',
         webhook_events_filter: ['completed'],
       }),
     });
